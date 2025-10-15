@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TransactionValue",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": "string"
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "merchant_name": {
+      "type": "string"
+    },
+    "transaction_type": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": "number"
+    },
+    "longitude": {
+      "type": "number"
+    },
+    "channel": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "transaction_id",
+    "account_id",
+    "timestamp",
+    "amount",
+    "transaction_type",
+    "latitude",
+    "longitude",
+    "channel",
+    "status"
+  ]
+}
+

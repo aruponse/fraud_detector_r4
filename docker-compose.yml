@@ -1,0 +1,229 @@
+services:
+  # Zookeeper - Coordinación de Kafka
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    hostname: zookeeper
+    container_name: fraud-zookeeper
+    restart: unless-stopped
+    ports:
+      - "2181:2181"
+    env_file:
+      - ./env.d/zookeeper.env
+    networks:
+      - fraud-kafka-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Kafka Broker - Mensajería distribuida
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka
+    container_name: fraud-kafka
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    env_file:
+      - ./env.d/kafka.env
+    networks:
+      - fraud-kafka-network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # Schema Registry - Gestión de esquemas
+  kafka-schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    hostname: schema-registry
+    container_name: fraud-schema-registry
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    env_file:
+      - ./env.d/schema-registry.env
+    networks:
+      - fraud-kafka-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Kafka Connect - Integración con fuentes y destinos de datos
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.5.0
+    hostname: kafka-connect
+    container_name: fraud-kafka-connect
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-schema-registry:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    env_file:
+      - ./env.d/kafka-connect.env
+    volumes:
+      - ./data:/data
+      - ./connectors:/etc/kafka-connect/connectors
+    networks:
+      - fraud-kafka-network
+    command:
+      - bash
+      - -c
+      - |
+        echo "Installing Kafka Connect plugins..."
+        confluent-hub install --no-prompt jcustenborder/kafka-connect-spooldir:2.0.65
+        confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.4
+        echo "Plugins installed successfully"
+        echo "Starting Kafka Connect..."
+        /etc/confluent/docker/run
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ksqlDB Server - Procesamiento de streams en tiempo real
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:7.8.4.arm64
+    hostname: ksqldb-server
+    container_name: fraud-ksqldb-server
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      kafka-schema-registry:
+        condition: service_healthy
+    ports:
+      - "8088:8088"
+    env_file:
+      - ./env.d/ksqldb-server.env
+    volumes:
+      - ./ksqldb:/etc/ksqldb/scripts
+    networks:
+      - fraud-kafka-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8088/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ksqlDB CLI - Interfaz de línea de comandos para ksqlDB
+  ksqldb-cli:
+    image: confluentinc/cp-ksqldb-cli:7.8.4.arm64 
+    container_name: fraud-ksqldb-cli
+    depends_on:
+      - ksqldb-server
+    entrypoint: /bin/sh
+    tty: true
+    stdin_open: true
+    networks:
+      - fraud-kafka-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # PostgreSQL - Base de datos para persistencia
+  postgres:
+    image: postgres:15-alpine
+    hostname: postgres
+    container_name: fraud-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./env.d/postgres.env
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fraud-kafka-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kafka_user -d fraud_detection"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  # Adminer - Gestión de base de datos web
+  adminer:
+    image: adminer:latest
+    container_name: fraud-adminer
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./env.d/adminer.env
+    networks:
+      - fraud-kafka-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+
+  # Kafka UI - Interfaz de administración de Kafka
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: fraud-kafka-ui
+    depends_on:
+      kafka:
+        condition: service_healthy 
+    ports:
+      - "9090:8080"
+    env_file:
+      - ./env.d/kafka-ui.env
+    restart: unless-stopped
+    networks:
+      - fraud-kafka-network
+
+networks:
+  fraud-kafka-network:
+    driver: bridge
+    name: fraud-kafka-network
+
+volumes:
+  postgres_data:
+    driver: local

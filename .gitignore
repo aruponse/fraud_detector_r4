@@ -1,0 +1,128 @@
+# =====================================================
+# .gitignore - Sistema de Detección de Fraude
+# =====================================================
+
+# Datos generados
+data/input/*
+data/processed/*
+data/error/*
+
+# Mantener estructura de directorios
+!data/input/.gitkeep
+!data/processed/.gitkeep
+!data/error/.gitkeep
+
+# Variables de entorno con secretos
+# IMPORTANTE: El archivo .env contiene configuraciones sensibles
+.env
+.env.backup.*
+.env.local
+.env.*.local
+
+# Mantener el template en git
+!env.template
+
+# Variables de entorno por servicio
+# Los archivos en env.d/ están versionados pero pueden sobrescribirse localmente
+# Si quieres excluirlos, descomenta las siguientes líneas:
+# env.d/*.env
+# !env.d/*.env.example
+
+# Logs
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+PYTHONPATH
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+
+# Backups (excepto .env.backup.*)
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+
+# Documentation builds
+docs/_build/
+
+# Database dumps
+*.sql.gz
+*.dump
+
+# Compressed files
+*.zip
+*.tar.gz
+*.rar
+
+# Local configuration overrides
+docker-compose.override.yml
+
+# Kafka data (si se monta localmente)
+kafka-data/
+zookeeper-data/
+
+# PostgreSQL data (si se monta localmente)
+postgres-data/
+
+# Node modules (si se agrega frontend)
+node_modules/
+
+/.cursor

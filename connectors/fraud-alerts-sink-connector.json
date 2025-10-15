@@ -1,0 +1,32 @@
+{
+  "name": "fraud-alerts-sink-connector",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "tasks.max": "1",
+    "topics": "fraud-high-value,fraud-alerts,fraud-unusual-time,fraud-high-frequency-table,fraud-multiple-locations-table",
+    "connection.url": "jdbc:postgresql://postgres:5432/fraud_detection",
+    "connection.user": "kafka_user",
+    "connection.password": "kafka_pass",
+    "table.name.format": "fraud_alerts",
+    "insert.mode": "insert",
+    "auto.create": "false",
+    "auto.evolve": "false",
+    "batch.size": "100",
+    "max.retries": "10",
+    "retry.backoff.ms": "3000",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "io.confluent.connect.json.JsonSchemaConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "transforms": "lowercaseFields",
+    "transforms.lowercaseFields.type": "org.apache.kafka.connect.transforms.ReplaceField$Value",
+    "transforms.lowercaseFields.renames": "TRANSACTION_ID:transaction_id,ACCOUNT_ID:account_id,AMOUNT:amount,TIMESTAMP:timestamp,MERCHANT_NAME:merchant_name,TRANSACTION_TYPE:transaction_type,LATITUDE:latitude,LONGITUDE:longitude,CHANNEL:channel,LOCATION:location,FRAUD_TYPE:fraud_type,REASON:reason,SEVERITY:severity,HOUR_OF_DAY:hour_of_day,TRANSACTION_COUNT:transaction_count,TOTAL_AMOUNT:total_amount,AVG_AMOUNT:avg_amount,UNIQUE_LOCATIONS:unique_locations,WINDOW_START:window_start,WINDOW_END:window_end,LOCATIONS:locations,MERCHANTS:merchants,CHANNELS:channels,TRANSACTION_IDS:transaction_ids",
+    "db.timezone": "UTC",
+    "errors.tolerance": "none",
+    "errors.log.enable": "true",
+    "errors.log.include.messages": "true",
+    "errors.deadletterqueue.topic.name": "dlq-fraud-alerts-sink",
+    "errors.deadletterqueue.topic.replication.factor": "1",
+    "errors.deadletterqueue.context.headers.enable": "true"
+  }
+}
+

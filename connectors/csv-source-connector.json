@@ -1,0 +1,26 @@
+{
+  "name": "csv-source-connector",
+  "config": {
+    "connector.class": "com.github.jcustenborder.kafka.connect.spooldir.SpoolDirCsvSourceConnector",
+    "tasks.max": "1",
+    "topic": "trx-fraud-transactions",
+    "input.path": "/data/input",
+    "finished.path": "/data/processed",
+    "error.path": "/data/error",
+    "input.file.pattern": ".*\\.csv",
+    "halt.on.error": "false",
+    "cleanup.policy": "MOVE",
+    "csv.first.row.as.header": "true",
+    "key.converter": "org.apache.kafka.connect.storage.StringConverter",
+    "value.converter": "io.confluent.connect.json.JsonSchemaConverter",
+    "value.converter.schema.registry.url": "http://schema-registry:8081",
+    "csv.separator.char": "44",
+    "empty.poll.wait.ms": "5000",
+    "batch.size": "100",
+    "processing.file.extension": ".processing",
+    "schema.generation.enabled": "false",
+    "key.schema": "{\"name\":\"com.github.jcustenborder.kafka.connect.model.Key\",\"type\":\"STRUCT\",\"isOptional\":false,\"fieldSchemas\":{\"transaction_id\":{\"type\":\"STRING\",\"isOptional\":false}}}",
+    "value.schema": "{\"name\":\"TransactionValue\",\"type\":\"STRUCT\",\"isOptional\":false,\"fieldSchemas\":{\"transaction_id\":{\"type\":\"STRING\",\"isOptional\":false},\"account_id\":{\"type\":\"STRING\",\"isOptional\":false},\"timestamp\":{\"type\":\"STRING\",\"isOptional\":false},\"amount\":{\"type\":\"FLOAT64\",\"isOptional\":false},\"merchant_name\":{\"type\":\"STRING\",\"isOptional\":false},\"transaction_type\":{\"type\":\"STRING\",\"isOptional\":false},\"latitude\":{\"type\":\"FLOAT64\",\"isOptional\":false},\"longitude\":{\"type\":\"FLOAT64\",\"isOptional\":false},\"channel\":{\"type\":\"STRING\",\"isOptional\":false},\"status\":{\"type\":\"STRING\",\"isOptional\":false}}}",
+    "csv.null.field.indicator": "BOTH"
+  }
+}

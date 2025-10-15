@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "TransactionKsqlDB",
+  "type": "object",
+  "description": "Schema optimizado para ksqlDB con tipos numéricos correctos",
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "description": "ID único de la transacción"
+    },
+    "account_id": {
+      "type": "string",
+      "description": "ID de la cuenta"
+    },
+    "timestamp": {
+      "type": "string",
+      "description": "Timestamp en formato yyyy-MM-dd HH:mm:ss"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Monto de la transacción como número"
+    },
+    "merchant_name": {
+      "type": "string",
+      "description": "Nombre del comerciante"
+    },
+    "transaction_type": {
+      "type": "string",
+      "description": "Tipo de transacción"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Latitud de la ubicación"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Longitud de la ubicación"
+    },
+    "channel": {
+      "type": "string",
+      "description": "Canal de la transacción"
+    },
+    "status": {
+      "type": "string",
+      "description": "Estado de la transacción"
+    }
+  },
+  "required": [
+    "transaction_id",
+    "account_id",
+    "timestamp",
+    "amount",
+    "transaction_type",
+    "latitude",
+    "longitude",
+    "channel",
+    "status"
+  ]
+}
+
