@@ -248,19 +248,6 @@ El sistema genera múltiples streams de agregación:
 
 1. **transactions:** Todas las transacciones procesadas
 2. **fraud_alerts:** Alertas de fraude detectadas
-3. **account_statistics:** Estadísticas agregadas por cuenta
-4. **merchant_statistics:** Estadísticas agregadas por comerciante
-5. **location_statistics:** Estadísticas agregadas por ubicación
-6. **channel_statistics:** Estadísticas agregadas por canal
-
-### Vistas Útiles
-
-- **v_account_summary:** Resumen por cuenta
-- **v_fraud_by_account:** Alertas de fraude por cuenta
-- **v_suspicious_merchants:** Comerciantes con más fraude
-- **v_recent_fraud_transactions:** Transacciones fraudulentas recientes
-- **v_daily_statistics:** Estadísticas diarias
-- **v_hourly_patterns:** Patrones horarios
 
 ### Funciones
 
