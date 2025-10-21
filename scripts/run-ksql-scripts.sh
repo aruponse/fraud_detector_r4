@@ -132,16 +132,28 @@ run_ksql_file_docker() {
         return 1
     fi
     
-    # Ejecutar usando ksqldb-cli
-    docker exec -i fraud-ksqldb-cli ksql http://fraud-ksqldb-server:8088 < "$sql_file" > /tmp/ksql_output.log 2>&1
+    # Crear archivo temporal sin comentarios
+    local temp_file="/tmp/ksql_script_cleaned.sql"
     
-    if [ $? -eq 0 ]; then
+    # Filtrar comentarios de línea completa (--) pero mantener SET statements
+    grep -v '^[[:space:]]*--' "$sql_file" | grep -v '^[[:space:]]*$' > "$temp_file"
+    
+    # Ejecutar usando ksqldb-cli con el archivo limpio
+    docker exec -i fraud-ksqldb-cli ksql http://fraud-ksqldb-server:8088 < "$temp_file" > /tmp/ksql_output.log 2>&1
+    local exit_code=$?
+    
+    # Limpiar archivo temporal
+    rm -f "$temp_file"
+    
+    if [ $exit_code -eq 0 ]; then
         print_success "Script ejecutado: $file_name"
         # Mostrar un resumen del output
         grep -i "created\|message" /tmp/ksql_output.log | head -5 2>/dev/null
         return 0
     else
         print_warning "Advertencia al ejecutar script: $file_name (puede ser normal si ya existe)"
+        # Mostrar errores si los hay
+        grep -i "error" /tmp/ksql_output.log | head -3 2>/dev/null
         return 0
     fi
 }

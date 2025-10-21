@@ -30,7 +30,12 @@ NC='\033[0m' # No Color
 KAFKA_BROKER="${KAFKA_BROKER:-localhost:9092}"
 TRANSACTIONS_TOPIC="${TRANSACTIONS_TOPIC:-trx-fraud-transactions}"
 FRAUD_ALERTS_TOPIC="${FRAUD_ALERTS_TOPIC:-fraud-alerts}"
-TOPICS=("$TRANSACTIONS_TOPIC" "$FRAUD_ALERTS_TOPIC")
+# Topics de detección de fraude
+FRAUD_HIGH_VALUE_TOPIC="${FRAUD_HIGH_VALUE_TOPIC:-fraud-high-value}"
+FRAUD_HIGH_FREQUENCY_TOPIC="${FRAUD_HIGH_FREQUENCY_TOPIC:-fraud-high-frequency-table}"
+FRAUD_MULTIPLE_LOCATIONS_TOPIC="${FRAUD_MULTIPLE_LOCATIONS_TOPIC:-fraud-multiple-locations-table}"
+FRAUD_UNUSUAL_TIME_TOPIC="${FRAUD_UNUSUAL_TIME_TOPIC:-fraud-unusual-time}"
+TOPICS=("$TRANSACTIONS_TOPIC" "$FRAUD_ALERTS_TOPIC" "$FRAUD_HIGH_VALUE_TOPIC" "$FRAUD_HIGH_FREQUENCY_TOPIC" "$FRAUD_MULTIPLE_LOCATIONS_TOPIC" "$FRAUD_UNUSUAL_TIME_TOPIC")
 PARTITIONS="${TOPIC_PARTITIONS:-3}"
 REPLICATION_FACTOR="${TOPIC_REPLICATION_FACTOR:-1}"
 
@@ -96,10 +101,10 @@ create_kafka_topics() {
         print_info "Creando tópico: $topic"
         
         # Verificar si el tópico existe
-        local topic_exists=$(docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null | grep -c "^${topic}$" || true)
+        local topic_exists=$(docker exec fraud-kafka kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null | grep -c "^${topic}$" || true)
         
         if [ "$topic_exists" -eq 0 ]; then
-            docker exec kafka kafka-topics --create \
+            docker exec fraud-kafka kafka-topics --create \
                 --bootstrap-server localhost:9092 \
                 --topic "$topic" \
                 --partitions $PARTITIONS \
@@ -116,7 +121,7 @@ create_kafka_topics() {
 # Función para listar tópicos
 list_topics() {
     print_step "Tópicos de Kafka disponibles:"
-    docker exec kafka kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null
+    docker exec fraud-kafka kafka-topics --bootstrap-server localhost:9092 --list 2>/dev/null
 }
 
 # Función para verificar el estado de PostgreSQL
@@ -127,7 +132,7 @@ check_postgres() {
     local retries=0
     
     while [ $retries -lt $max_retries ]; do
-        if docker exec postgres pg_isready -U kafka_user -d fraud_detection > /dev/null 2>&1; then
+        if docker exec fraud-postgres pg_isready -U kafka_user -d fraud_detection > /dev/null 2>&1; then
             print_success "PostgreSQL está listo"
             return 0
         fi
@@ -157,7 +162,7 @@ show_system_status() {
     
     echo ""
     print_info "Tablas en PostgreSQL:"
-    docker exec postgres psql -U kafka_user -d fraud_detection -c "\dt" 2>/dev/null || echo "No hay tablas"
+    docker exec fraud-postgres psql -U kafka_user -d fraud_detection -c "\dt" 2>/dev/null || echo "No hay tablas"
 }
 
 # Función para generar datos de prueba
@@ -245,9 +250,7 @@ register_schemas() {
 }
 
 # Función principal
-main() {
-    clear
-    
+main() {    
     print_banner "Sistema de Detección de Fraude - Setup Completo"
     echo ""
     

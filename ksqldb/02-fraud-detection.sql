@@ -12,7 +12,8 @@ SET 'auto.offset.reset' = 'earliest';
 -- =====================================================
 CREATE STREAM IF NOT EXISTS high_value_transactions WITH (
     KAFKA_TOPIC = 'fraud-high-value',
-    VALUE_FORMAT = 'JSON_SR'
+    VALUE_FORMAT = 'JSON_SR',
+    PARTITIONS = 3
 ) AS SELECT
     transaction_id,
     account_id,
@@ -37,7 +38,8 @@ EMIT CHANGES;
 -- =====================================================
 CREATE TABLE IF NOT EXISTS transaction_frequency WITH (
     KAFKA_TOPIC = 'fraud-high-frequency-table',
-    VALUE_FORMAT = 'JSON_SR'
+    VALUE_FORMAT = 'JSON_SR',
+    PARTITIONS = 3
 ) AS SELECT
     account_id,
     'HIGH_FREQUENCY' as fraud_type,
@@ -64,7 +66,8 @@ EMIT CHANGES;
 -- =====================================================
 CREATE TABLE IF NOT EXISTS multiple_locations WITH (
     KAFKA_TOPIC = 'fraud-multiple-locations-table',
-    VALUE_FORMAT = 'JSON_SR'
+    VALUE_FORMAT = 'JSON_SR',
+    PARTITIONS = 3
 ) AS SELECT
     account_id,
     'MULTIPLE_LOCATIONS' as fraud_type,
@@ -108,7 +111,8 @@ EMIT CHANGES;
 -- =====================================================
 CREATE STREAM IF NOT EXISTS unusual_time_alerts WITH (
     KAFKA_TOPIC = 'fraud-unusual-time',
-    VALUE_FORMAT = 'JSON_SR'
+    VALUE_FORMAT = 'JSON_SR',
+    PARTITIONS = 3
 ) AS SELECT
     transaction_id,
     account_id,
